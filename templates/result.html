@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Results:</title>
+     <style>
+        body 
+
+ {
+    font-family: "Open Sans", Arial, sans-serif;
+    font-size: 20px;
+    line-height: 1.8;
+    font-weight: 400;
+    color: rgba(300, 300, 300, 0.7);
+    background: #160f30;
+           margin: 0;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+}
+     h1,h2 {
+        font-size: 22px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    padding: 26px;
+    }
+
+</style>
+</head>
+<body>
+    <h1>Search Result</h1>
+    {% if indexes %}
+        <p>Substring "{{ substring }}" found at indexes: {{ indexes }}</p>
+    {% else %}
+        <p>Substring "{{ substring }}" not found</p>
+    {% endif %}
+    <h2>FM Index Information</h2>
+    <ul>
+        <li>Suffix Array: {{ fm.suffix_array }}</li>
+        <li>BWT: {{ fm.bwt }}</li>
+        <li>First Occurrence: {{ fm.first_occurrence }}</li>
+        <li>Count:</li>
+        <ul>
+            {% for symbol, counts in fm.count.items() %}
+                <li>{{ symbol }}: {{ counts }}</li>
+            {% endfor %}
+        </ul>
+    </ul>
+    <a href="/">Back</a>
+</body>
+</html>
