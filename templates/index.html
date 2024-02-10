@@ -87,5 +87,96 @@
       <input type="submit" value="Search">
     </form>
   </div>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bioinformatics Tools</title>
+  <style>
+    body {
+      font-family: "Open Sans", Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      color: #f0f0f0; 
+      background-color: #160f30; 
+      margin: 0;
+    }
+
+    .container {
+      padding: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      max-width: 600px; 
+      margin: 0 auto; 
+      background: linear-gradient(to bottom, #1A1238, #120b26); 
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); 
+    }
+
+    h1 {
+      font-size: 32px; 
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    p {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      width: 100%; 
+    }
+
+    label {
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px; 
+      width: 100%; 
+      box-sizing: border-box; 
+    }
+
+    input[type="submit"] {
+      padding: 12px 25px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Suffix Array | BWT | FM-Index </h1>
+    <p> This programm generates the "Suffix-Array" & "Burrows-Wheeler Transform"
+    of an input text and performs a substring (pattern) search using those data structures.
+    <br>An FM- Index is also shown as a result.</p>
+    <form method="POST">
+      <label for="text">Input Text:</label>
+      <input type="text" id="text" name="text">
+      <label for="substring">Substring:</label>
+      <input type="text" id="substring" name="substring">
+      <input type="submit" value="Search">
+    </form>
+  </div>  <footer>
+  <p>Developed by <a href="https://github.com/kris96tian">kris96tian</a></p>
+</footer>
 </body>
 </html>
