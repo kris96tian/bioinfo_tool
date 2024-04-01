@@ -9,7 +9,7 @@
 </head>
 <body>
     <header>
-        <h1>Bioinformatics String Tools</h1>
+  <h1 id="main-title">Bioinformatics String Tools</h1> 
         <p>Generate suffix array, Burrows-Wheeler transform, and FM indices for input strings<br>Translate DNA sequences into their corresponding protein sequences.</p>
     </header>
     <div class="container">
@@ -72,6 +72,10 @@
             <button type="submit" class="btn btn-primary mt-3">Translate DNA to Protein</button>
         </form>
     </div>
+    </div>
+    <footer class="footer">
+      <p>Created by Kristian Alikaj. For more visit <a href="https://github.com/kris96tian">GitHub profile</a>.</p>
+    </footer>
 </body>
 
 <style>
@@ -158,6 +162,28 @@
         background-color: #333;
     }
 
+
+/* Footer Styles */
+.footer {
+  background-color: #320F39;
+  color: #fff;             
+  text-align: center;
+  padding: 15px 0;          
+  width: 100%;             
+}
+
+
+.container { 
+  min-height: calc(100vh - 105px); 
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+
     /* Responsive Styles */
     @media screen and (max-width: 768px) {
         .container {
@@ -170,4 +196,16 @@
     }
 
 </style>
+
+<script>
+  const title = document.getElementById('main-title');
+
+  title.addEventListener('click', function() {
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => form.submit());
+  });
+  title.style.cursor = 'pointer'; 
+</script>
+
+
 </html>
