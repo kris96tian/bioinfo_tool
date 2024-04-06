@@ -9,12 +9,12 @@
 </head>
 <body>
     <header>
-  <h1 id="main-title">Bioinformatics String Tools</h1> 
-        <p>Generate suffix array, Burrows-Wheeler transform, and FM indices for input strings<br>Translate DNA sequences into their corresponding protein sequences.</p>
+        <h1 id="main-title">Bioinformatics String Tools</h1> 
+        <p>Generate suffix array, Burrows-Wheeler transform, and FM indices for input strings. Translate DNA sequences into their corresponding protein sequences.</p>
     </header>
     <div class="container">
         <form action="/suffix-array" method="post">
-            <div class="form-group mt-3">      
+            <div class="form-group mt-3">
                 <label for="text">Text:</label>
                 <input type="text" class="form-control" id="text" name="text">
             </div>
@@ -38,7 +38,7 @@
             </div>
             {% endif %}
             <button type="submit" class="btn btn-primary mt-3">Burrows-Wheeler Transform</button>
-        </form> 
+        </form>
         <form action="/fm-index" method="post">
             <div class="form-group mt-3">
                 <label for="text">Text:</label>
@@ -48,15 +48,15 @@
                 <label for="pattern">Pattern:</label>
                 <input type="text" class="form-control" id="pattern" name="pattern">
             </div>
-            {% if occurrences %}
+            {% if result %}
             <div class="result mt-3">
                 <h3>FM Index:</h3>
-                <p>{{ occurrences }}</p>
+                <p>{{ result }}</p>
             </div>
             {% endif %}
             <button type="submit" class="btn btn-primary mt-3">FM Index</button>
         </form>
-        <form action="/translate" method="post">
+        <form action="/dna-to-protein" method="post">
             <div class="form-group mt-3">
                 <label for="dna_sequence">DNA Sequence:</label>
                 <input type="text" class="form-control" id="dna_sequence" name="dna_sequence">
@@ -71,7 +71,6 @@
             {% endif %}
             <button type="submit" class="btn btn-primary mt-3">Translate DNA to Protein</button>
         </form>
-    </div>
     </div>
     <footer class="footer">
       <p>Created by Kristian Alikaj. For more visit <a href="https://github.com/kris96tian">GitHub profile</a>.</p>
@@ -154,7 +153,8 @@
         background-color: #f2f2f2;
         padding: 10px;
         border-radius: 5px;
-        margin-bottom: 10px;
+        max-height: 200px;
+        overflow-y: auto;
     }
 
     /* Hover Styles */
@@ -162,39 +162,14 @@
         background-color: #333;
     }
 
-
-/* Footer Styles */
-.footer {
-  background-color: #320F39;
-  color: #fff;             
-  text-align: center;
-  padding: 15px 0;          
-  width: 100%;             
-}
-
-
-.container { 
-  min-height: calc(100vh - 105px); 
-}
-
-body {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-
-    /* Responsive Styles */
-    @media screen and (max-width: 768px) {
-        .container {
-            padding: 20px;
-        }
-
-        form {
-            margin: 10px;
-        }
+    /* Footer Styles */
+    .footer {
+        background-color: #320F39;
+        color: #fff;
+        text-align: center;
+        padding: 15px 0;
+        width: 100%;
     }
-
 </style>
 
 <script>
@@ -206,6 +181,4 @@ body {
   });
   title.style.cursor = 'pointer'; 
 </script>
-
-
 </html>
