@@ -1,54 +1,166 @@
-
 from flask import Flask, request, render_template
 
 app = Flask(__name__)
 
-def suffix_array(text):
-    suffixes = [(text[i:], i) for i in range(len(text))]
-    suffixes.sort(key=lambda x: x[0])
-    return [suffix[1] for suffix in suffixes]
+def build_suffix_array(text):
+    """
+    Build the suffix array for the given text.
+    
+    Args:
+        text (str): The input text.
+        
+    Returns:
+        list: The suffix array.
+    """
+    n = len(text)
+    suffix_array = [i for i in range(n)]
+    suffix_array.sort(key=lambda i: text[i:])
+    return suffix_array
 
 def bwt(text):
-    return ''.join(text[i - 1] for i in suffix_array(text))
+    """
+    Compute the Burrows-Wheeler transform of the given text.
+    
+    Args:
+        text (str): The input text.
+        
+    Returns:
+        str: The Burrows-Wheeler transform of the text.
+    """
+    suffix_array = build_suffix_array(text)
+    return ''.join(text[i - 1] for i in suffix_array)
 
-def create_fm_index(bwt):
-    first_occurrence = {}
-    count = {}
-    for symbol in bwt:
-        if symbol not in first_occurrence:
-            first_occurrence[symbol] = 0
-            count[symbol] = 0
-    for i, symbol in enumerate(bwt):
-        if i > 0:
-            count[symbol] += 1
-            if symbol not in count:
-                count[symbol] = 0
-    for symbol in sorted(count.keys()):
-        if symbol not in first_occurrence:
-            first_occurrence[symbol] = 0
-    for symbol in sorted(count.keys()):
-        if first_occurrence[symbol] == 0:
-            first_occurrence[symbol] = count[symbol]
-    return first_occurrence, count
+def build_lcp_array(text, suffix_array):
+    """
+    Build the LCP (Longest Common Prefix) array for the given text and suffix array.
+    
+    Args:
+        text (str): The input text.
+        suffix_array (list): The suffix array.
+        
+    Returns:
+        list: The LCP array.
+    """
+    n = len(text)
+    lcp_array = [0] * n
+    rank = [0] * n
+    
+    for i in range(n):
+        rank[suffix_array[i]] = i
+    
+    l = 0
+    for i in range(n):
+        if rank[i] == n - 1:
+            l = 0
+            continue
+        
+        j = suffix_array[rank[i] + 1]
+        while i + l < n and j + l < n and text[i + l] == text[j + l]:
+            l += 1
+        
+        lcp_array[rank[i]] = l
+        if l > 0:
+            l -= 1
+    
+    return lcp_array
 
-def fm_substring_search(bwt, first_occurrence, count, pattern):
-    occurrences = []
-    top = 0
-    bottom = len(bwt) - 1
-    while top <= bottom:
-        if pattern:
-            symbol = pattern[-1]
-            pattern = pattern[:-1]
-            if symbol in first_occurrence:
-                top = first_occurrence[symbol] + count[symbol]
-                if chr(ord(symbol) + 1) in first_occurrence:
-                    bottom = first_occurrence[chr(ord(symbol) + 1)] - 1
+def find_first_occurrence(text, pattern, suffix_array, lcp_array):
+    """
+    Find the first occurrence of the pattern in the text using the FM-index.
+    
+    Args:
+        text (str): The input text.
+        pattern (str): The input pattern.
+        suffix_array (list): The suffix array.
+        lcp_array (list): The LCP array.
+        
+    Returns:
+        int: The index of the first occurrence of the pattern in the text, or -1 if not found.
+    """
+    n = len(text)
+    left, right = 0, n - 1
+    
+    while left <= right:
+        mid = (left + right) // 2
+        if lcp_array[mid] >= len(pattern):
+            if text[suffix_array[mid]:suffix_array[mid] + len(pattern)] == pattern:
+                return suffix_array[mid]
+            elif text[suffix_array[mid]:suffix_array[mid] + len(pattern)] < pattern:
+                left = mid + 1
             else:
-                return occurrences
+                right = mid - 1
+        elif text[suffix_array[mid]:suffix_array[mid] + lcp_array[mid]] < pattern[:lcp_array[mid]]:
+            left = mid + 1
         else:
-            for i in range(top, bottom + 1):
-                occurrences.append(i)
-            return occurrences
+            right = mid - 1
+    
+    return -1
+
+def count_occurrences(text, pattern, suffix_array, lcp_array):
+    """
+    Count the number of occurrences of the pattern in the text using the FM-index.
+    
+    Args:
+        text (str): The input text.
+        pattern (str): The input pattern.
+        suffix_array (list): The suffix array.
+        lcp_array (list): The LCP array.
+        
+    Returns:
+        dict: A dictionary containing the first occurrence and count of each character in the pattern.
+    """
+    n = len(text)
+    occurrences = {}
+    
+    for char in pattern:
+        left, right = 0, n - 1
+        first_occurrence = -1
+        count = 0
+        
+        while left <= right:
+            mid = (left + right) // 2
+            if lcp_array[mid] >= len(char):
+                if text[suffix_array[mid]:suffix_array[mid] + len(char)] == char:
+              
+                    left_idx = right_idx = mid
+                    while left_idx > 0 and lcp_array[left_idx - 1] >= len(char):
+                        left_idx -= 1
+                    while right_idx < n - 1 and lcp_array[right_idx + 1] >= len(char):
+                        right_idx += 1
+                    first_occurrence = suffix_array[left_idx]
+                    count = right_idx - left_idx + 1
+                    break
+                elif text[suffix_array[mid]:suffix_array[mid] + len(char)] < char:
+                    left = mid + 1
+                else:
+                    right = mid - 1
+            elif text[suffix_array[mid]:suffix_array[mid] + lcp_array[mid]] < char[:lcp_array[mid]]:
+                left = mid + 1
+            else:
+                right = mid - 1
+        
+        occurrences[char] = (first_occurrence, count)
+    
+    return occurrences
+
+def create_fm_index(text, pattern):
+    """
+    Create the FM-index for the given text and pattern.
+    
+    Args:
+        text (str): The input text.
+        pattern (str): The input pattern.
+        
+    Returns:
+        dict: A dictionary containing the first occurrence and count of each character in the pattern.
+    """
+    suffix_array = build_suffix_array(text)
+    lcp_array = build_lcp_array(text, suffix_array)
+
+    occurrences = count_occurrences(text, pattern, suffix_array, lcp_array)
+    
+    return occurrences
+
 
 def translate_dna_to_protein(dna_sequence):
     genetic_code = {
@@ -76,30 +188,52 @@ def translate_dna_to_protein(dna_sequence):
         'GGT': ('G', 'Glycine'), 'GGC': ('G', 'Glycine'), 'GGA': ('G', 'Glycine'), 'GGG': ('G', 'Glycine'),
         'TAA': ('*', 'Stop'), 'TAG': ('*', 'Stop'), 'TGA': ('*', 'Stop')
     }
+
     if dna_sequence is not None:
         dna_sequence = dna_sequence.upper().replace(' ', '')
+        protein_sequence = []
+        amino_acid_sequence = []
 
-    protein_sequence = []
-    amino_acid_sequence = []
+        for i in range(0, len(dna_sequence), 3):
+            codon = dna_sequence[i:i + 3]
+            if len(codon) < 3:
+                break  # Skip incomplete codons at the end of the sequence
 
-    for i in range(0, len(dna_sequence), 3):
-        codon = dna_sequence[i:i + 3]
-        if len(codon) < 3:
-            break  # Skip incomplete codons at the end of the sequence
+            if codon in genetic_code:
+                amino_acid, aa_name = genetic_code[codon]
+                protein_sequence.append(amino_acid)
+                amino_acid_sequence.append(aa_name)
+            else:
+                amino_acid_sequence.append('Unknown')
 
-        if codon in genetic_code:
-            amino_acid, aa_name = genetic_code[codon]
-            protein_sequence.append(amino_acid)
-            amino_acid_sequence.append(aa_name)
-        else:
-            amino_acid_sequence.append('Unknown')
+        protein_sequence = ''.join(protein_sequence)
+        amino_acid_sequence = ' - '.join(amino_acid_sequence)
 
-    protein_sequence = ''.join(protein_sequence)
-    amino_acid_sequence = '-'.join(amino_acid_sequence)
-
-    return protein_sequence, amino_acid_sequence
+        return protein_sequence, amino_acid_sequence
 
 
+
+    if dna_sequence is not None:
+        dna_sequence = dna_sequence.upper().replace(' ', '')
+        protein_sequence = []
+        amino_acid_sequence = []
+
+        for i in range(0, len(dna_sequence), 3):
+            codon = dna_sequence[i:i + 3]
+            if len(codon) < 3:
+                break  # Skip incomplete codons at the end of the sequence
+
+            if codon in genetic_code:
+                amino_acid, aa_name = genetic_code[codon]
+                protein_sequence.append(amino_acid)
+                amino_acid_sequence.append(aa_name)
+            else:
+                amino_acid_sequence.append('Unknown')
+
+        protein_sequence = ''.join(protein_sequence)
+        amino_acid_sequence = ' - '.join(amino_acid_sequence)
+
+        return protein_sequence, amino_acid_sequence
 
 @app.route('/')
 def index():
@@ -108,7 +242,7 @@ def index():
 @app.route('/suffix-array', methods=['POST'])
 def suffix_array_search():
     text = request.form['text']
-    suffixes = suffix_array(text)
+    suffixes = build_suffix_array(text)
     return render_template('index.html', suffixes=suffixes, text=text)
 
 @app.route('/bwt', methods=['POST'])
@@ -121,18 +255,24 @@ def bwt_search():
 def fm_index():
     text = request.form['text']
     pattern = request.form['pattern']
-    bwt_text = bwt(text)
-    first_occurrence, count = create_fm_index(bwt_text)
-    occurrences = fm_substring_search(bwt_text, first_occurrence, count, pattern)
-    return render_template('index.html', occurrences=occurrences, text=text, pattern=pattern)
+    occurrences = create_fm_index(text, pattern)
 
 
-@app.route('/translate', methods=['POST'])
-def translate():
+    result = "FM Index:\n"
+    result += "{\n"
+    for char, (first_occurrence, count) in occurrences.items():
+        result += f"    '{char}': {{'First Occurrence': {first_occurrence}, 'Count': {count}}},\n"
+    result += "}\n"
+
+    return render_template('index.html', result=result)
+
+
+
+@app.route('/dna-to-protein', methods=['POST'])
+def dna_to_protein():
     dna_sequence = request.form['dna_sequence']
     protein_sequence, amino_acid_sequence = translate_dna_to_protein(dna_sequence)
-    return render_template('index.html', dna_sequence=dna_sequence, protein_sequence=protein_sequence, amino_acid_sequence=amino_acid_sequence)
+    return render_template('index.html', protein_sequence=protein_sequence, amino_acid_sequence=amino_acid_sequence, dna_sequence=dna_sequence)
 
 if __name__ == '__main__':
     app.run(debug=True)
-
