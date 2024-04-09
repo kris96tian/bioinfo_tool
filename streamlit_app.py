@@ -1,5 +1,14 @@
 import streamlit as st
+import subprocess
+import os
 
+
+st.set_page_config(
+    page_title="Bioinformatics String Tools",
+    page_icon="💾",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
 def build_suffix_array(text):
     """
@@ -15,7 +24,20 @@ def build_suffix_array(text):
     suffix_array = [i for i in range(n)]
     suffix_array.sort(key=lambda i: text[i:])
     return suffix_array
-
+	
+def bwt(text):
+    """
+    Compute the Burrows-Wheeler transform of the given text.
+    
+    Args:
+        text (str): The input text.
+        
+    Returns:
+        str: The Burrows-Wheeler transform of the text.
+    """
+    suffix_array = build_suffix_array(text)
+    return ''.join(text[i - 1] for i in suffix_array)
+	
 def create_fm_index(text, pattern):
     """
     Create the FM-index for the given text and pattern.
@@ -152,44 +174,45 @@ def translate_dna_to_protein(dna_sequence):
 
         return protein_sequence, amino_acid_sequence
 
+
 def main():
     st.title("Bioinformatics Tools")
-    st.markdown("Generate suffix array, Burrows-Wheeler transform, and FM indices for input strings. Translate DNA sequences into their corresponding protein sequences.")
-	 
-    st.sidebar.title("Select Tool")
-    tool = st.sidebar.selectbox("", ["Suffix Array", "Burrows-Wheeler Transform", "FM Index", "DNA to Protein"])
+    st.markdown("Generate suffix array, Burrows-Wheeler transform, and FM indices for input strings. You can also translate DNA sequences into their corresponding proteine and aminoaci sequences, as well as get the global alignments with scores of two fasta files.")
 
+    # Sidebar with sections for each tool
+    tool = st.sidebar.radio("Select Tool", ["Suffix Array", "Burrows-Wheeler Transform", "FM Index", "DNA to Protein", "Sequence Alignment"])
+
+    # Suffix Array Tool
     if tool == "Suffix Array":
-        text = st.text_area("Enter text", height=200)
+        st.header("Get suffix array")
+        text_suffix = st.text_area("Enter text", height=200)
         if st.button("Generate Suffix Array"):
-            suffixes = build_suffix_array(text)
+            suffixes = build_suffix_array(text_suffix)
             st.write("Suffix Array:")
             st.write(suffixes)
 
+    # Burrows-Wheeler Transform Tool
     elif tool == "Burrows-Wheeler Transform":
+        st.header("Get the BWT of string:")
         text = st.text_area("Enter text", height=200)
         if st.button("Generate BWT"):
             bwt_text = bwt(text)
             st.write("Burrows-Wheeler Transform:")
             st.write(bwt_text)
 
+    # FM Index Tool
     elif tool == "FM Index":
-        text = st.text_area("Enter text", height=200)
+        st.header("Generate the FM Index:")
+        text_fm = st.text_area("Enter text", height=200)
         pattern = st.text_input("Enter pattern")
-        if st.button("Generate FM Index"):
-            occurrences = create_fm_index(text, pattern)
-            result = "FM Index:\n"
-            result += "{\n"
-            for char in pattern:
-                if char in occurrences:
-                    first_occurrence, count = occurrences[char]
-                    result += f" \n   '{char}': {{'First Occurrence': {first_occurrence}, 'Count': {count}}},\n"
-                else:
-                    result += f" \n   '{char}': {{'First Occurrence': -1, 'Count': 0}},\n"
-            result += "}\n"
-            st.write(result)
+        if st.button("0 : First Occurrence, 1 : Count"):
+            occurrences = create_fm_index(text_fm, pattern)
+            st.write("FM Index:")
+            st.write(occurrences)
 
+    # DNA to Protein Tool
     elif tool == "DNA to Protein":
+        st.header("Translate DNA Sequence:")
         dna_sequence = st.text_area("Enter DNA sequence", height=200)
         if st.button("Translate to Protein"):
             protein_sequence, amino_acid_sequence = translate_dna_to_protein(dna_sequence)
@@ -197,6 +220,42 @@ def main():
             st.write(protein_sequence)
             st.write("Amino Acid Sequence:")
             st.write(amino_acid_sequence)
+
+    # Sequence Alignment Tool
+    elif tool == "Sequence Alignment":
+        st.title("Get Sequence Alignment:")
+        file1 = st.file_uploader("Upload File 1", type=["txt"])
+        file2 = st.file_uploader("Upload File 2", type=["txt"])
+        match = st.number_input("Match Score", value=3, step=1)
+        mismatch = st.number_input("Mismatch Score", value=-1, step=1)
+        gap = st.number_input("Gap Score", value=-2, step=1)
+        if st.button("Align"):
+            if file1 is not None and file2 is not None:
+                file1.seek(0)
+                file2.seek(0)
+                with open("file1.txt", "wb") as f:
+                    f.write(file1.read())
+                with open("file2.txt", "wb") as f:
+                    f.write(file2.read())
+                try:
+                    result = subprocess.run(['./align', 'file1.txt', 'file2.txt', str(int(match)), str(int(mismatch)), str(int(gap))], capture_output=True, text=True)
+                    os.remove('file1.txt')
+                    os.remove('file2.txt')
+                    st.write("Click the button below to download the alignment results.")
+                    st.download_button(
+                        "Download Results",
+                        result.stdout,
+                        "alignment_results.txt",
+                        "text/plain",
+                    )
+                except subprocess.CalledProcessError as e:
+                    st.error(f"Error: {e.stderr}")
+            else:
+                st.warning("Please upload both input files.")
+
+    # Footer
+    st.write("\n\n\n")
+    st.write("Created by Kristian Alikaj")
 
 if __name__ == '__main__':
     main()
