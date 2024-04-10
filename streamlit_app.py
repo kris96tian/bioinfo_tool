@@ -157,10 +157,10 @@ def main():
     st.markdown("Generate suffix array, Burrows-Wheeler transform, and FM indices for input strings. Translate DNA sequences into their corresponding protein sequences. Perform global alignment of input strings.")
 
     st.sidebar.title("Select Tool")
-    tool = st.sidebar.radio("Select Tool", ["Suffix Array", "Burrows-Wheeler Transform", "FM Index", "DNA to Protein", "Needleman-Wunsch Alignment"])
+    tool = st.sidebar.radio("Select Tool", ["Suffix Array", "Burrows-Wheeler Transform", "FM Index", "DNA to Protein", "Global Alignment"])
 
     if tool == "Suffix Array":
-	st.subheader("Get Suffix Array")
+        st.subheader("Suffix Array")
         text = st.text_area("Enter text", height=200)
         if st.button("Generate Suffix Array"):
             suffixes = build_suffix_array(text)
@@ -168,7 +168,7 @@ def main():
             st.write(suffixes)
 
     elif tool == "Burrows-Wheeler Transform":
-	st.subheader("Burrows-Wheeler Transform")
+        st.subheader("Burrows-Wheeler Transform")
         text = st.text_area("Enter text", height=200)
         if st.button("Generate BWT"):
             bwt_text = bwt(text)
@@ -176,7 +176,7 @@ def main():
             st.write(bwt_text)
 
     elif tool == "FM Index":
-	st.subheader("Generate the FM Index")
+        st.subheader("FM Index")
         text = st.text_area("Enter text", height=200)
         pattern = st.text_input("Enter pattern")
         if st.button("Generate FM Index"):
@@ -193,7 +193,7 @@ def main():
             st.write(result)
 
     elif tool == "DNA to Protein":
-	st.subheader("Translate DNA to Proteine & Aminoacid Sequence")
+        st.subheader("DNA to Protein Translation")
         dna_sequence = st.text_area("Enter DNA sequence", height=200)
         if st.button("Translate to Protein"):
             protein_sequence, amino_acid_sequence = translate_dna_to_protein(dna_sequence)
@@ -202,7 +202,7 @@ def main():
             st.write("Amino Acid Sequence:")
             st.write(amino_acid_sequence)
 
-    elif tool == "Needleman-Wunsch Alignment":
+    elif tool == "Global Alignment":
         st.subheader("Needleman-Wunsch Alignment")
         seq1 = st.text_input("Enter the first sequence")
         seq2 = st.text_input("Enter the second sequence")
