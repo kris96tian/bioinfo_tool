@@ -1,12 +1,7 @@
 # Bioinformatics String Tools
 
-## https://bioinfotools.streamlit.app/
+Visit: https://bioinfotool.pythonanywhere.com/
 
-
-## https://bioinfotool.pythonanywhere.com/
-
-
-A web app where string algorithms can be performed: Generate suffix array, Burrows-Wheeler transform, and FM indices for input strings
-Translate DNA sequences into their corresponding protein sequences.
+<img src="blob:chrome-untrusted://media-app/6061c561-97c9-4e7a-89d4-64bcff433557"/>![image](https://github.com/user-attachments/assets/8868273f-0f7f-4925-99d9-96f0889fd27a)
 
 
