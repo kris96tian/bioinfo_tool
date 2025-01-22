@@ -1,184 +1,408 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bioinformatics Tools</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BioInfo StringTools</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a1a1a;
+            --bg-light: #0f2a2a;
+            --accent: #00ffcc;
+            --text-primary: #d0fff0;
+            --border-color: #004444;
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar {
+            background: var(--bg-light);
+            height: 100vh;
+            border-right: 1px solid var(--border-color);
+            padding: 1rem;
+        }
+
+        .nav-link {
+            color: var(--text-primary) !important;
+            border-radius: 6px;
+            margin: 2px 0;
+            transition: all 0.2s ease;
+            padding: 0.5rem 1rem;
+        }
+
+        .nav-link:hover {
+            background: var(--accent) !important;
+            color: var(--bg-dark) !important;
+        }
+
+        .nav-link.active {
+            background: var(--accent) !important;
+            color: var(--bg-dark) !important;
+            font-weight: 600;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .tool-container {
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-control {
+            background: #001a1a;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            background: #001a1a;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 255, 204, 0.1);
+        }
+
+        pre {
+            background: #001a1a;
+            color: var(--accent);
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+            text-shadow: 0 0 5px rgba(0, 255, 204, 0.3);
+        }
+
+        .table-dark {
+            --bs-table-bg: var(--bg-light);
+            --bs-table-striped-bg: #0a1a1a;
+            --bs-table-hover-bg: #004444;
+            border-color: var(--border-color);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border: none;
+            color: #002222;
+            font-weight: bold;
+            padding: 0.5rem 1.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background: #00e6b8;
+            color: #001111;
+            box-shadow: 0 0 15px var(--accent);
+        }
+
+        .alert {
+            border: none;
+            border-radius: 6px;
+            padding: 1rem;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        input[type="file"]::file-selector-button {
+            background: var(--accent);
+            border: none;
+            color: #002222;
+            font-weight: bold;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            margin-right: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        input[type="file"]::file-selector-button:hover {
+            background: #00e6b8;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .spinner-border {
+            border-color: var(--accent);
+            border-right-color: transparent;
+        }
+
+        .footer {
+            background: var(--bg-light);
+            color: var(--text-primary);
+            padding: 1rem;
+            margin-top: auto;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .footer a:hover {
+            color: #00e6b8;
+            text-shadow: 0 0 5px rgba(0, 255, 204, 0.3);
+        }
+
+        .brand-link {
+            color: var(--accent) !important;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .brand-link:hover {
+            color: #00e6b8 !important;
+            text-shadow: 0 0 5px rgba(0, 255, 204, 0.3);
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1 id="main-title">Bioinformatics String Tools</h1> 
-        <p>Generate suffix array, Burrows-Wheeler transform, and FM indices for input strings. Translate DNA sequences into their corresponding protein sequences.</p>
-    </header>
-    <div class="container">
-        <form action="/suffix-array" method="post">
-            <div class="form-group mt-3">
-                <label for="text">Text:</label>
-                <input type="text" class="form-control" id="text" name="text">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-2 sidebar">
+                <h3 class="mb-3">🧬 BioInfo StringTools</h3>
+                <nav class="nav flex-column">
+                    <a class="nav-link active" data-tool="suffix">Suffix Array</a>
+                    <a class="nav-link" data-tool="search">Pattern Search</a>
+                    <a class="nav-link" data-tool="bwt">BWT</a>
+                    <a class="nav-link" data-tool="fm">FM Index</a>
+                    <a class="nav-link" data-tool="dna">DNA Translation</a>
+                    <a class="nav-link" data-tool="alignment">Alignment</a>
+                </nav>
             </div>
-            {% if suffixes %}
-            <div class="result mt-3">
-                <h3>Suffix Array:</h3>
-                <p>{{ suffixes }}</p>
+
+            <div class="col-lg-10 p-4">
+                <div class="tool-container" id="suffix">
+                    <h4 class="mb-3">Suffix Array Generator</h4>
+                    <form class="tool-form">
+                        <input type="hidden" name="tool" value="suffix_array">
+                        <div class="mb-3">
+                            <label class="form-label">Input Text</label>
+                            <textarea name="text" class="form-control" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Generate</button>
+                    </form>
+                </div>
+
+                <div class="tool-container d-none" id="search">
+                    <h4 class="mb-3">Pattern Search</h4>
+                    <form class="tool-form">
+                        <input type="hidden" name="tool" value="search">
+                        <div class="mb-3">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="input_type" id="textInput" value="text" checked>
+                                <label class="form-check-label" for="textInput">Enter Text</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="input_type" id="fileInput" value="file">
+                                <label class="form-check-label" for="fileInput">Upload File</label>
+                            </div>
+                        </div>
+                        <div class="mb-3" id="textInputArea">
+                            <label class="form-label">Input Text</label>
+                            <textarea name="text" class="form-control" rows="4"></textarea>
+                        </div>
+                        <div class="mb-3 d-none" id="fileInputArea">
+                            <label class="form-label">Upload Text File</label>
+<input type="file" name="text_file" class="form-control" accept=".txt,.fasta,.fa">                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Search Pattern</label>
+                            <input type="text" name="pattern" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </form>
+                </div>
+
+                <div class="tool-container d-none" id="bwt">
+                    <h4 class="mb-3">Burrows-Wheeler Transform</h4>
+                    <form class="tool-form">
+                        <input type="hidden" name="tool" value="bwt">
+                        <div class="mb-3">
+                            <label class="form-label">Input Text</label>
+                            <textarea name="text" class="form-control" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Transform</button>
+                    </form>
+                </div>
+
+                <div class="tool-container d-none" id="fm">
+                    <h4 class="mb-3">FM Index Builder</h4>
+                    <form class="tool-form">
+                        <input type="hidden" name="tool" value="fm_index">
+                        <div class="mb-3">
+                            <label class="form-label">Input Text</label>
+                            <textarea name="text" class="form-control" rows="4" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Pattern</label>
+                            <input type="text" name="pattern" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Build Index</button>
+                    </form>
+                </div>
+
+                <div class="tool-container d-none" id="dna">
+                    <h4 class="mb-3">DNA Translation</h4>
+                    <form class="tool-form">
+                        <input type="hidden" name="tool" value="dna_protein">
+                        <div class="mb-3">
+                            <label class="form-label">DNA Sequence</label>
+                            <textarea name="dna" class="form-control" rows="4" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Translate</button>
+                    </form>
+                </div>
+
+                <div class="tool-container d-none" id="alignment">
+                    <h4 class="mb-3">Global Alignment</h4>
+                    <form class="tool-form">
+                        <input type="hidden" name="tool" value="alignment">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Sequence 1</label>
+                                <input type="text" name="seq1" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Sequence 2</label>
+                                <input type="text" name="seq2" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Match</label>
+                                <input type="number" step="0.1" name="match" class="form-control" value="1" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Mismatch</label>
+                                <input type="number" step="0.1" name="mismatch" class="form-control" value="-1" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Open Gap</label>
+                                <input type="number" step="0.1" name="open" class="form-control" value="-10" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Extend Gap</label>
+                                <input type="number" step="0.1" name="extend" class="form-control" value="-0.5" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Align</button>
+                    </form>
+                </div>
+
+                <div id="result"></div>
             </div>
-            {% endif %}
-            <button type="submit" class="btn btn-primary mt-3">Suffix Array</button>
-        </form>
-        <form action="/bwt" method="post">
-            <div class="form-group mt-3">
-                <label for="text">Text:</label>
-                <input type="text" class="form-control" id="text" name="text">
-            </div>
-            {% if bwt_text %}
-            <div class="result mt-3">
-                <h3>Burrows-Wheeler Transform:</h3> 
-                <p>{{ bwt_text }}</p>
-            </div>
-            {% endif %}
-            <button type="submit" class="btn btn-primary mt-3">Burrows-Wheeler Transform</button>
-        </form>
-        <form action="/fm-index" method="post">
-            <div class="form-group mt-3">
-                <label for="text">Text:</label>
-                <input type="text" class="form-control" id="text" name="text">
-            </div>  
-            <div class="form-group mt-3">
-                <label for="pattern">Pattern:</label>
-                <input type="text" class="form-control" id="pattern" name="pattern">
-            </div>
-            {% if result %}
-            <div class="result mt-3">
-                <h3>FM Index:</h3>
-                <p>{{ result }}</p>
-            </div>
-            {% endif %}
-            <button type="submit" class="btn btn-primary mt-3">FM Index</button>
-        </form>
-        <form action="/dna-to-protein" method="post">
-            <div class="form-group mt-3">
-                <label for="dna_sequence">DNA Sequence:</label>
-                <input type="text" class="form-control" id="dna_sequence" name="dna_sequence">
-            </div>
-            {% if protein_sequence %}
-            <div class="result mt-3">
-                <h3>Protein Sequence:</h3>  
-                <p>{{ protein_sequence }}</p>
-                <h3>Amino Acid Sequence:</h3>
-                <p>{{ amino_acid_sequence }}</p>
-            </div>
-            {% endif %}
-            <button type="submit" class="btn btn-primary mt-3">Translate DNA to Protein</button>
-        </form>
+        </div>
     </div>
+
+
     <footer class="footer">
-      <p>Created by Kristian Alikaj. For more visit <a href="https://github.com/kris96tian">GitHub profile</a>.</p>
+        <div>
+            <strong>Created by Kristian Alikaj</strong><br>
+            For more, visit <a href="https://github.com/kris96tian" target="_blank">My GitHub</a> or 
+            <a href="https://kris96tian.github.io/" target="_blank">My Portfolio Website</a>
+        </div>
     </footer>
-</body>
 
-<style>
-    /* General Styles */
-    body {
-        font-family: 'Poppins', sans-serif;
-        background-color: #4F145C;
-        color: #333;
-        margin: 0;
-    }
-
-    .container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: flex-start;
-        padding: 40px 20px;
-    }
-
-    /* Header Styles */
-    header {
-        background-color: #320F39;
-        color: #fff;
-        padding: 20px;
-        text-align: center;
-        width: 100%;
-    }
-
-    header h1 {
-        margin: 0;
-        font-weight: 600;
-    }
-
-    header p {
-        margin: 10px 0 0;
-        font-size: 18px;
-        color: #B909F1;
-    }
-
-    /* Form Styles */
-    form {
-        background-color: #fff;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        margin: 20px;
-        width: 100%;
-        max-width: 500px;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    label {
-        font-weight: 500;
-    }
-
-    input {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-    }
-
-    button {
-        background-color: #4F145C;
-        color: #fff;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-
-    .result {
-        background-color: #f2f2f2;
-        padding: 10px;
-        border-radius: 5px;
-        max-height: 200px;
-        overflow-y: auto;
-    }
-
-    /* Hover Styles */
-    button:hover {
-        background-color: #333;
-    }
-
-    /* Footer Styles */
-    .footer {
-        background-color: #320F39;
-        color: #fff;
-        text-align: center;
-        padding: 15px 0;
-        width: 100%;
-    }
-</style>
-
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-  const title = document.getElementById('main-title');
+    $(document).ready(function() {
+        $('.brand-link').click(function(e) {
+            e.preventDefault();
+            window.location.href = '/';
+        });
 
-  title.addEventListener('click', function() {
-    const forms = document.querySelectorAll('form');
-    forms.forEach(form => form.submit());
-  });
-  title.style.cursor = 'pointer'; 
+        $('.nav-link').click(function(e) {
+            e.preventDefault();
+            $('.nav-link').removeClass('active');
+            $(this).addClass('active');
+            $('.tool-container').addClass('d-none');
+            $('#' + $(this).data('tool')).removeClass('d-none');
+        });
+
+        $('input[name="input_type"]').change(function() {
+            const inputType = $(this).val();
+            $('#textInputArea, #fileInputArea').toggleClass('d-none');
+            $('[name="text"], [name="text_file"]').prop('required', false);
+            if(inputType === 'text') {
+                $('[name="text"]').prop('required', true);
+            } else {
+                $('[name="text_file"]').prop('required', true);
+            }
+        });
+
+        $('.tool-form').submit(function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            $('#result').html(`
+                <div class="alert alert-info">
+                    <div class="spinner-border spinner-border-sm me-2"></div>
+                    Processing...
+                </div>
+            `);
+
+            fetch('/process', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let resultContent = '';
+                    if (data.table) {
+                        resultContent = `<div class="table-responsive">${data.table}</div>`;
+                    } else if (data.alignment) {
+                        resultContent = `<pre class="mt-3">${data.alignment}</pre>`;
+                    } else if (data.protein) {
+                        resultContent = `
+                            <div class="alert alert-success">
+                                <h5>Protein Sequence</h5>
+                                <pre class="mb-0">${data.protein}</pre>
+                                <h5 class="mt-3">Amino Acids</h5>
+                                <pre class="mb-0">${data.amino}</pre>
+                            </div>
+                        `;
+                    } else if (data.result) {
+                        resultContent = `<pre class="mt-3">${data.result}</pre>`;
+                    } else if (data.occurrences) {
+                        resultContent = `
+                            <div class="alert alert-success">
+                                <h5>Search Results</h5>
+                                <p>Input length: ${data.input_length} characters</p>
+                                <p>Found ${data.matches} occurrence(s):</p>
+                                <pre>${data.occurrences.join(', ')}</pre>
+                            </div>
+                        `;
+                    }
+                    $('#result').html(resultContent);
+                } else {
+                    $('#result').html(`
+                        <div class="alert alert-danger">
+                            ${data.error || 'Error processing request'}
+                        </div>
+                    `);
+                }
+            })
+            .catch(error => {
+                $('#result').html(`
+                    <div class="alert alert-danger">
+                        Network error: ${error}
+                    </div>
+                `);
+            });
+        });
+
+        $('.nav-link.active').click();
+    });
 </script>
+</body>
 </html>
