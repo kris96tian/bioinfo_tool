@@ -2,3 +2,4 @@ flask
 biopython
 pandas
 numpy
+gunicorn
