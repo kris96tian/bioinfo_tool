@@ -18,27 +18,27 @@ def perform_global_alignment(seq1, seq2, match_score, mismatch_score, open_gap_s
 
     aligner = Align.PairwiseAligner()
     aligner.mode = 'global'
-    aligner.match_score = match_score      
-    aligner.mismatch_score = mismatch_score 
-    aligner.open_gap_score = open_gap_score  
-    aligner.extend_gap_score = extend_gap_score 
+    aligner.match_score = match_score
+    aligner.mismatch_score = mismatch_score
+    aligner.open_gap_score = open_gap_score
+    aligner.extend_gap_score = extend_gap_score
 
     try:
-        alignments = aligner.align(seq1, seq2)
+        alignments = list(aligner.align(seq1, seq2))
         if not alignments:
             return "No alignment possible."
         best_alignment = alignments[0]
-        aligned_seq1, aligned_seq2 = best_alignment[0], best_alignment[1]
+        aligned_seq1 = best_alignment.target
+        aligned_seq2 = best_alignment.query
         score = best_alignment.score
-        
+
         symbols = []
         for a, b in zip(aligned_seq1, aligned_seq2):
             if a == b:
                 symbols.append("|")
             else:
                 symbols.append(".")
-        
-        
+
         formatted_output = (
             f"Aligned Sequence 1: {aligned_seq1}\n"
             f"                   {''.join(symbols)}\n"
@@ -88,21 +88,33 @@ def bwt(text):
     return ''.join(text[i - 1] for i in suffix_array)
 
 def create_fm_index(text, pattern):
+    if not text or not pattern:
+        return {"error": "Empty text or pattern"}
+    
     bwt_text = bwt(text)
     sorted_bwt = sorted(bwt_text)
-    occurrences = {}
+    
+    # first_occurrence with all BWT characters
     first_occurrence = {}
     current_char = None
     for idx, char in enumerate(sorted_bwt):
         if char != current_char:
             first_occurrence[char] = idx
             current_char = char
-    unique_chars_in_pattern = set(pattern)
-    for char in unique_chars_in_pattern:
-        fo = first_occurrence.get(char, -1)  
+    
+    fm = {}
+    for char in set(pattern):
+        # Get first occurrence or -1 if not found
+        fo = first_occurrence.get(char, -1)
+        # Count occurrences in BWT
         cnt = bwt_text.count(char)
-        occurrences[char] = {'First Occurrence': fo, 'Count': cnt}
-    return occurrences
+        fm[char] = {
+            'First Occurrence': fo,
+            'Count': cnt
+        }
+    
+    return fm
+
 
 def translate_dna_to_protein(dna_sequence):
     genetic_code = {
@@ -139,7 +151,7 @@ def translate_dna_to_protein(dna_sequence):
         for i in range(0, len(dna_sequence), 3):
             codon = dna_sequence[i:i + 3]
             if len(codon) < 3:
-                break 
+                break
             if codon in genetic_code:
                 amino_acid, aa_name = genetic_code[codon]
                 protein_sequence.append(amino_acid)
@@ -162,38 +174,32 @@ def process():
     tool = request.form['tool']
     try:
         if tool == 'search':
-            # Handle both text input and file upload
             if 'text_file' in request.files and request.files['text_file'].filename != '':
                 file = request.files['text_file']
                 if file.filename.lower().endswith(('.txt', '.fasta', '.fa')):
-                    # Read file content as text
                     file_content = file.read().decode('utf-8')
-                    
+
                     if file.filename.lower().endswith(('.fasta', '.fa')):
-                        # Create a StringIO object to simulate a file object
                         fasta_file = StringIO(file_content)
-                        
-                        # Parse FASTA file
+
                         sequences = list(SeqIO.parse(fasta_file, "fasta"))
                         if not sequences:
                             return jsonify({'success': False, 'error': 'No sequences found in FASTA file'})
                         text = "".join(str(record.seq) for record in sequences)
                     else:
-                        # Handle text file
                         text = file_content
                 else:
                     return jsonify({'success': False, 'error': 'Invalid file type. Use .txt, .fasta, or .fa'})
             else:
-                # Handle direct text input
                 text = request.form['text']
-            
+
             pattern = request.form['pattern']
-            
+
             if not text:
                 return jsonify({'success': False, 'error': 'No input text provided'})
             if not pattern:
                 return jsonify({'success': False, 'error': 'No pattern provided'})
-            
+
             occurrences = search_with_suffix_array(text, pattern)
             result = {
                 'success': True,
@@ -201,7 +207,7 @@ def process():
                 'input_length': len(text),
                 'matches': len(occurrences)
             }
-            
+
             return jsonify(result)
 
 
@@ -225,19 +231,31 @@ def process():
                 'result': bwt(text)
             })
 
+
         elif tool == 'fm_index':
             text = request.form['text']
             pattern = request.form['pattern']
-            fm = create_fm_index(text, pattern)
-            df = pd.DataFrame([{
-                'Character': k,
-                'First': v['First'],
-                'Count': v['Count']
-            } for k, v in fm.items()])
-            return jsonify({
-                'success': True,
-                'table': df.to_html(classes='table table-dark', index=False)
-            })
+            if not text or not pattern:
+                return jsonify({'success': False, 'error': 'Empty text or pattern'})
+            
+            try:
+                fm = create_fm_index(text, pattern)
+                if 'error' in fm:
+                    return jsonify({'success': False, 'error': fm['error']})
+                
+                df = pd.DataFrame([{
+                    'Character': k,
+                    'First Occurrence': v['First Occurrence'],  # Match actual key
+                    'Count': v['Count']
+                } for k, v in fm.items()])
+                
+                return jsonify({
+                    'success': True,
+                    'table': df.to_html(classes='table table-dark', index=False)
+                })
+            
+            except Exception as e:
+                return jsonify({'success': False, 'error': str(e)})
 
         elif tool == 'dna_protein':
             dna = request.form['dna']
